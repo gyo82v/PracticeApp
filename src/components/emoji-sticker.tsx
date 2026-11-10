@@ -1,5 +1,6 @@
-import { View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Image, type ImageSource } from 'expo-image';
+import Animated from 'react-native-reanimated';
 
 type Props = {
   imageSize: number;
@@ -8,8 +9,20 @@ type Props = {
 
 export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   return (
-    <View style={{ top: -350 }}>
-      <Image source={stickerSource} style={{ width: imageSize, height: imageSize }} />
-    </View>
+    <Animated.View style={[styles.sticker, {width: imageSize, height: imageSize}]}>
+      <Image source={stickerSource} style={styles.image}/>
+    </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  sticker: {
+    position: 'absolute',
+    top: 0,
+    left: 0
+  },
+  image: {
+    width: "100%",
+    height: "100%"
+  }
+})
