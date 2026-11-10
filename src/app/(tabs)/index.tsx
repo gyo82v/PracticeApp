@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, ComponentRef } from 'react';
+import { captureRef } from 'react-native-view-shot';
 import { Platform, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
 import type { ImageSource } from 'expo-image';
 import EmojiList from '@/components/emoji-list';
 
@@ -21,6 +23,14 @@ export default function Index() {
   const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false)
   const [pickedEmoji, setPickedEmoji] = useState<ImageSource | undefined>(undefined);
+  const [permissionResponse, requestPermission] = MediaLibrary.usePermissions({ writeOnly: true });
+  const imageRef = useRef<ComponentRef<typeof View>>(null);
+
+  useEffect(() => {
+    if (!permissionResponse?.granted) {
+      requestPermission();
+    }
+  }, [])
 
   const pickImageAsync = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -50,13 +60,23 @@ export default function Index() {
   };
 
   const onSaveImageAsync = async () => {
-    //code here
+    try {
+      const localUri = await captureRef(imageRef, {
+        height: 440,
+        quality: 1,
+      });
+
+      await MediaLibrary.Asset.create(localUri);
+      alert('Saved!');
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.imageContainer}>
-        <View>
+        <View ref={imageRef} collapsable={false}>
           <ImageViewer imageSource={PlaceholderImage} selectedImage={selectedImage} />
           {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
         </View>
